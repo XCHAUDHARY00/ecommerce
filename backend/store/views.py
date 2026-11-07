@@ -77,7 +77,7 @@ def getProducts(request):
     query = request.GET.get('search', '')
     category = request.GET.get('category', '')
     
-    products = Product.objects.all()
+    products = Product.objects.select_related('category').all()
     
     if query:
         products = products.filter(
@@ -106,7 +106,7 @@ def Categories(request):
 @api_view(['GET'])
 def getProduct(request, pk):
     try:
-        product = Product.objects.get(pk=pk)
+        product = Product.objects.select_related('category').get(pk=pk)
         serializer = ProductSerializer(product, context={'request': request})
         return JsonResponse(serializer.data)
     except Product.DoesNotExist:
@@ -117,7 +117,7 @@ def getProduct(request, pk):
 @api_view(['GET'])
 def cart_view(request):
     cart = get_cart(request)
-    cart_items = CartItem.objects.filter(cart=cart)
+    cart_items = CartItem.objects.filter(cart=cart).select_related('product', 'product__category')
     serializer = CartItemSerializer(cart_items, many=True, context={'request': request})
     return JsonResponse(serializer.data, safe=False)
 

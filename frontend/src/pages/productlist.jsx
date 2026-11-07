@@ -26,7 +26,8 @@ function Productlist() {
 
         axiosInstance.get(url)
             .then((response) => {
-                setProducts(response.data);
+                const data = Array.isArray(response.data) ? response.data : (response.data?.results || []);
+                setProducts(data);
                 setLoading(false);
             })
             .catch((err) => {

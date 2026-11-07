@@ -28,7 +28,8 @@ function Navbar() {
       const fetchSuggestions = async () => {
         try {
           const res = await axiosInstance.get(`/products/?search=${encodeURIComponent(searchQuery)}`);
-          setSuggestions(res.data.slice(0, 5));
+          const items = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+          setSuggestions(items.slice(0, 5));
         } catch (error) {
           console.error("Error fetching suggestions", error);
         }
