@@ -27,6 +27,21 @@ def send_email_async(subject, html_content, to_email):
             print(f"Error sending email: {e}")
     threading.Thread(target=send).start()
 
+@api_view(['GET'])
+def api_root(request):
+    return Response({
+        "status": "online",
+        "message": "Indestack Ecommerce API is running successfully!",
+        "endpoints": {
+            "products": "/products/",
+            "categories": "/categories/",
+            "admin": "/admin/",
+            "cart": "/cart/",
+            "login": "/login/",
+            "register": "/register/",
+        }
+    })
+
 def get_cart(request):
     """Get or create cart. Authenticated users get their own cart.
     Anonymous users get a session-based cart to avoid shared cart bug."""
