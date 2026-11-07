@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {useCart} from "../context/Cartcontext.jsx";
 import { AuthContext } from "../context/AuthContext.jsx";
+import axiosInstance from "../api/axiosInstance";
 
 function Productdetails() {
     const { id } = useParams();
@@ -14,25 +15,17 @@ function Productdetails() {
     const [isAdded, setIsAdded] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
 
-    const Baseurl = import.meta.env.VITE_BASE_URL || 'http://127.0.0.1:8000';
-
     useEffect(() => {
-        fetch(`${Baseurl}/products/${id}/`)
+        axiosInstance.get(`/products/${id}/`)
             .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Product not found");
-                }
-                return response.json();
-            })
-            .then((data) => {
-                setProduct(data);
+                setProduct(response.data);
                 setLoading(false);
             })
             .catch((err) => {
-                setError(err.message);
+                setError(err.response?.data?.error || err.message || "Product not found");
                 setLoading(false);
             });
-    }, [id, Baseurl]);
+    }, [id]);
 
     const handleAddToCart = () => {
         if (!user) {

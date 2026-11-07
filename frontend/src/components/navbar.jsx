@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCart } from "../context/Cartcontext.jsx";
 import { AuthContext } from "../context/AuthContext.jsx";
+import axiosInstance from "../api/axiosInstance";
 
 function Navbar() {
   const { cart } = useCart();
@@ -16,12 +17,9 @@ function Navbar() {
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const Baseurl = import.meta.env.VITE_BASE_URL || 'http://127.0.0.1:8000';
-
   useEffect(() => {
-    fetch(`${Baseurl}/categories/`)
-      .then(res => res.json())
-      .then(data => setCategories(data))
+    axiosInstance.get('/categories/')
+      .then(res => setCategories(res.data))
       .catch(err => console.error(err));
   }, []);
 
@@ -29,9 +27,8 @@ function Navbar() {
     if (searchQuery.trim().length > 0) {
       const fetchSuggestions = async () => {
         try {
-          const res = await fetch(`${Baseurl}/products/?search=${searchQuery}`);
-          const data = await res.json();
-          setSuggestions(data.slice(0, 5));
+          const res = await axiosInstance.get(`/products/?search=${encodeURIComponent(searchQuery)}`);
+          setSuggestions(res.data.slice(0, 5));
         } catch (error) {
           console.error("Error fetching suggestions", error);
         }

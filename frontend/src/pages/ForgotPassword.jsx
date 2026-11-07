@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import axiosInstance from '../api/axiosInstance';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
     const [status, setStatus] = useState({ type: '', message: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
-    const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://127.0.0.1:8000';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -14,19 +13,11 @@ const ForgotPassword = () => {
         setStatus({ type: '', message: '' });
 
         try {
-            const res = await fetch(`${BASE_URL}/password-reset/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
-            });
-            const data = await res.json();
-            
-            if (!res.ok) throw new Error(data.error || 'Something went wrong');
-            
-            setStatus({ type: 'success', message: data.message });
+            const res = await axiosInstance.post('/password-reset/', { email });
+            setStatus({ type: 'success', message: res.data.message });
             setEmail('');
         } catch (err) {
-            setStatus({ type: 'error', message: err.message });
+            setStatus({ type: 'error', message: err.response?.data?.error || err.message || 'Something went wrong' });
         } finally {
             setIsSubmitting(false);
         }

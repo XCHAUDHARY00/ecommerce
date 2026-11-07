@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import ProductCard from "../components/productcard";
+import axiosInstance from "../api/axiosInstance";
 
 function Productlist() {
     const [products, setProducts] = useState([]);
@@ -8,36 +9,31 @@ function Productlist() {
     const [error, setError] = useState(null);
     const location = useLocation();
 
-    const Baseurl = import.meta.env.VITE_BASE_URL || 'http://127.0.0.1:8000';
-
     useEffect(() => {
         const queryParams = new URLSearchParams(location.search);
         const searchQuery = queryParams.get("search") || "";
         const categoryQuery = queryParams.get("category") || "";
 
-        let url = `${Baseurl}/products/`;
-        if (searchQuery || categoryQuery) {
-            url += '?';
-            if (searchQuery) url += `search=${searchQuery}&`;
-            if (categoryQuery) url += `category=${categoryQuery}&`;
+        let url = '/products/';
+        const params = new URLSearchParams();
+        if (searchQuery) params.append("search", searchQuery);
+        if (categoryQuery) params.append("category", categoryQuery);
+
+        const queryString = params.toString();
+        if (queryString) {
+            url += `?${queryString}`;
         }
 
-        fetch(url)
+        axiosInstance.get(url)
             .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Failed to fetch products");
-                }
-                return response.json();
-            })
-            .then((data) => {
-                setProducts(data);
+                setProducts(response.data);
                 setLoading(false);
             })
             .catch((err) => {
-                setError(err.message);
+                setError(err.response?.data?.error || err.message || "Failed to fetch products");
                 setLoading(false);
             });
-    }, [Baseurl, location.search]);
+    }, [location.search]);
 
     if (loading) {
         return (

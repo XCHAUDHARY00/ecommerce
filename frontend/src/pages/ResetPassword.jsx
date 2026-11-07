@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import axiosInstance from '../api/axiosInstance';
 
 const ResetPassword = () => {
     const [password, setPassword] = useState('');
@@ -11,8 +12,6 @@ const ResetPassword = () => {
     const navigate = useNavigate();
     const uid = searchParams.get('uid');
     const token = searchParams.get('token');
-    
-    const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://127.0.0.1:8000';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -31,21 +30,13 @@ const ResetPassword = () => {
         setStatus({ type: '', message: '' });
 
         try {
-            const res = await fetch(`${BASE_URL}/password-reset-confirm/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ uid, token, password })
-            });
-            const data = await res.json();
-            
-            if (!res.ok) throw new Error(data.error || 'Failed to reset password');
-            
-            setStatus({ type: 'success', message: data.message });
+            const res = await axiosInstance.post('/password-reset-confirm/', { uid, token, password });
+            setStatus({ type: 'success', message: res.data.message });
             setTimeout(() => {
                 navigate('/login');
             }, 3000);
         } catch (err) {
-            setStatus({ type: 'error', message: err.message });
+            setStatus({ type: 'error', message: err.response?.data?.error || err.message || 'Failed to reset password' });
             setIsSubmitting(false);
         }
     };

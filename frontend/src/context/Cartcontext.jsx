@@ -1,26 +1,22 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import axiosInstance from "../api/axiosInstance";
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://127.0.0.1:8000';
   const [cart, setCart] = useState([]);
 
   // fetch Cart 
   const fetchCart = async () => {
     try {
-      const res = await fetch(`${BASE_URL}/cart/`);
-      if (!res.ok) {
-        throw new Error("Failed to fetch cart");
-      } else {
-        const data = await res.json();
-        const formattedCart = data.map(item => ({
-            ...item.product,
-            cartItemId: item.id,
-            quantity: item.quantity
-        }));
-        setCart(formattedCart);
-      }
+      const res = await axiosInstance.get('/cart/');
+      const data = res.data;
+      const formattedCart = data.map(item => ({
+          ...item.product,
+          cartItemId: item.id,
+          quantity: item.quantity
+      }));
+      setCart(formattedCart);
     } catch (error) {
       console.log(error);
     }
@@ -33,16 +29,7 @@ export const CartProvider = ({ children }) => {
   // add product
   const addProduct = async (product) => {
     try {
-      const res = await fetch(`${BASE_URL}/cart/add/${product.id}/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(product),
-      });
-      if (!res.ok) {
-        throw new Error("Failed to add product");
-      }
+      await axiosInstance.post(`/cart/add/${product.id}/`, product);
       fetchCart();
     } catch (error) {
       console.log(error);
@@ -52,15 +39,7 @@ export const CartProvider = ({ children }) => {
   // remove product
   const removeProduct = async (product) => {
     try {
-      const res = await fetch(`${BASE_URL}/cart/remove/${product.id}/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (!res.ok) {
-        throw new Error("Failed to remove product");
-      }
+      await axiosInstance.post(`/cart/remove/${product.id}/`);
       fetchCart();
     } catch (error) {
       console.log(error);
@@ -75,16 +54,7 @@ export const CartProvider = ({ children }) => {
   // update quantity
   const updateQuantity = async (product, quantity) => {
     try {
-      const res = await fetch(`${BASE_URL}/cart/update/${product.id}/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ quantity }),
-      });
-      if (!res.ok) {
-        throw new Error("Failed to update quantity");
-      }
+      await axiosInstance.post(`/cart/update/${product.id}/`, { quantity });
       fetchCart();
     } catch (error) {
       console.log(error);

@@ -20,6 +20,10 @@ axiosInstance.interceptors.response.use(
     response => response,
     async error => {
         const originalRequest = error.config;
+        // Guard: if no response (network error), reject immediately
+        if (!error.response) {
+            return Promise.reject(error);
+        }
         if (error.response.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             const refresh = localStorage.getItem('refresh');

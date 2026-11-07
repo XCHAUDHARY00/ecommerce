@@ -2,12 +2,12 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useCart } from '../context/Cartcontext';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import axiosInstance from '../api/axiosInstance';
 
 function Checkout() {
     const { cart, clearCart } = useCart();
     const navigate = useNavigate();
     const { user, loading: authLoading } = useContext(AuthContext);
-    const BASE_URL = import.meta.env.VITE_BASE_URL;
 
     const [formData, setFormData] = useState({
         full_name: '',
@@ -41,18 +41,7 @@ function Checkout() {
         setError('');
 
         try {
-            const res = await fetch(`${BASE_URL}/order/create/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.error || 'Failed to place order');
-            }
+            const res = await axiosInstance.post('/order/create/', formData);
 
             // Order successful
             setSuccess(true);
@@ -63,7 +52,7 @@ function Checkout() {
             }, 3000);
 
         } catch (err) {
-            setError(err.message);
+            setError(err.response?.data?.error || err.message || 'Failed to place order');
         } finally {
             setIsSubmitting(false);
         }

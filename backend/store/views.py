@@ -28,11 +28,34 @@ def send_email_async(subject, html_content, to_email):
     threading.Thread(target=send).start()
 
 def get_cart(request):
-    user = request.user if request.user.is_authenticated else None
-    cart, _ = Cart.objects.get_or_create(user=user)
+    """Get or create cart. Authenticated users get their own cart.
+    Anonymous users get a session-based cart to avoid shared cart bug."""
+    if request.user.is_authenticated:
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+    else:
+        # Session-based cart for anonymous users
+        if not request.session.session_key:
+            request.session.create()
+        session_key = request.session.session_key
+        cart_id = request.session.get('cart_id')
+        if cart_id:
+            try:
+                cart = Cart.objects.get(id=cart_id, user=None)
+            except Cart.DoesNotExist:
+                cart = Cart.objects.create(user=None)
+                request.session['cart_id'] = cart.id
+        else:
+            cart = Cart.objects.create(user=None)
+            request.session['cart_id'] = cart.id
     return cart
 
 from django.db.models import Q
+from rest_framework.pagination import PageNumberPagination
+
+class ProductPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 @api_view(['GET'])
 def getProducts(request):
@@ -47,7 +70,15 @@ def getProducts(request):
         )
     if category:
         products = products.filter(category__name__iexact=category)
-        
+    
+    # Paginate if 'page' param is provided, otherwise return all (backward compatible)
+    page = request.GET.get('page')
+    if page:
+        paginator = ProductPagination()
+        paginated = paginator.paginate_queryset(products, request)
+        serializer = ProductSerializer(paginated, many=True, context={'request': request})
+        return paginator.get_paginated_response(serializer.data)
+    
     serializer = ProductSerializer(products, many=True, context={'request': request})
     return JsonResponse(serializer.data, safe=False)
 
@@ -99,7 +130,7 @@ def remove_from_cart(request, product_id):
         cart_item.delete()
         return JsonResponse({'message': 'Item removed from cart'})
     except (Product.DoesNotExist, CartItem.DoesNotExist):
-        return JsonResponse({'error': 'Ipython3 manage.py runservertem not found'}, status=404)
+        return JsonResponse({'error': 'Item not found'}, status=404)
 
 @api_view(['POST'])
 def update_cart(request, product_id):
@@ -201,7 +232,11 @@ def register_user(request):
         })
     return Response(serializer.errors, status=400)
 
-@api_view(['GET'])
+from rest_framework.permissions import IsAdminUser
+from rest_framework.decorators import permission_classes
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
 def create_superuser_view(request):
     import os
     username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
