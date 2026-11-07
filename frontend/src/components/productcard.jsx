@@ -1,12 +1,8 @@
 import { Link } from "react-router-dom";
+import { getImageUrl } from "../utils/imageUrl";
 
 function ProductCard({ product }) {
-    const Baseurl = import.meta.env.VITE_BASE_URL || 'http://127.0.0.1:8000';
-    
-    // Handle both absolute and relative image URLs
-    const imageUrl = product.image?.startsWith("http")
-        ? product.image
-        : `${Baseurl}${product.image}`;
+    const imageUrl = getImageUrl(product?.image);
 
     return (
         <Link to={`/product/${product.id}`} className="group block h-full">

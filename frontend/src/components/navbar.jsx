@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCart } from "../context/Cartcontext.jsx";
 import { AuthContext } from "../context/AuthContext.jsx";
 import axiosInstance from "../api/axiosInstance";
+import { getImageUrl } from "../utils/imageUrl";
 
 function Navbar() {
   const { cart } = useCart();
@@ -96,7 +97,7 @@ function Navbar() {
                       className="flex items-center px-4 py-3 hover:bg-orange-50 transition-colors"
                       onClick={() => setSearchQuery("")}
                     >
-                      <img src={item.image?.startsWith('http') ? item.image : `${Baseurl}${item.image}`} alt={item.name} className="w-10 h-10 object-cover rounded-md" />
+                      <img src={getImageUrl(item.image)} alt={item.name} className="w-10 h-10 object-cover rounded-md" />
                       <div className="ml-3">
                         <p className="text-sm font-medium text-gray-800">{item.name}</p>
                         <p className="text-xs text-gray-500">${item.price}</p>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import ProductCard from "../components/productcard";
 import axiosInstance from "../api/axiosInstance";
+import { getImageUrl } from "../utils/imageUrl";
 
 function Productlist() {
     const [products, setProducts] = useState([]);
@@ -89,7 +90,7 @@ function Productlist() {
                                     <div key={`${product.id}-${idx}`} className="inline-block w-64 h-96 bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex-shrink-0 flex flex-col transform hover:-translate-y-3 transition-transform duration-300">
                                         <div className="h-64 bg-gray-50 flex items-center justify-center overflow-hidden">
                                             <img 
-                                                src={product.image?.startsWith('http') ? product.image : `${Baseurl}${product.image}`} 
+                                                src={getImageUrl(product.image)} 
                                                 alt={product.name} 
                                                 className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500"
                                             />

@@ -1,9 +1,9 @@
 import { useCart } from "../context/Cartcontext.jsx";
 import { Link } from "react-router-dom";
+import { getImageUrl } from "../utils/imageUrl";
 
 function Cart() {
     const { cart, updateQuantity, removeProduct } = useCart();
-    const Baseurl = import.meta.env.VITE_BASE_URL;
 
     const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
@@ -31,7 +31,7 @@ function Cart() {
             <div className="flex flex-col lg:flex-row gap-12">
                 <div className="lg:w-2/3 space-y-6">
                     {cart.map((item) => {
-                        const imageUrl = item.image?.startsWith("http") ? item.image : `${Baseurl}${item.image}`;
+                        const imageUrl = getImageUrl(item.image);
                         
                         return (
                             <div key={item.id} className="group flex flex-col sm:flex-row items-center bg-white p-4 rounded-3xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 relative overflow-hidden">

@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import {useCart} from "../context/Cartcontext.jsx";
 import { AuthContext } from "../context/AuthContext.jsx";
 import axiosInstance from "../api/axiosInstance";
+import { getImageUrl } from "../utils/imageUrl";
 
 function Productdetails() {
     const { id } = useParams();
@@ -63,10 +64,7 @@ function Productdetails() {
 
     if (!product) return null;
 
-    // Handle both absolute and relative image URLs
-    const imageUrl = product.image?.startsWith("http")
-        ? product.image
-        : `${Baseurl}${product.image}`;
+    const imageUrl = getImageUrl(product.image);
 
     return (
         <>
